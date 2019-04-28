@@ -35,7 +35,7 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 		IUifService service = NCLocator.getInstance().lookup(IUifService.class);
 		int maxcode = 0;
 		try {
-			maxcode = (int) service.findColValue("pqm_pipelinepointdatas", "code", "nvl(dr,0) = 0 order by code desc");
+			maxcode = (int) service.findColValue("pqm_pipelinepointdatas", "max(code)", "nvl(dr,0) = 0");
 		} catch (UifException e) {
 			e.printStackTrace();
 		}

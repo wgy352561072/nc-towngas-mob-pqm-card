@@ -31,7 +31,19 @@ public class PipelinepointDatasMobServiceImpl implements
 		PipelinepointdatasVO pipelinepointDatasVO = new PipelinepointdatasVO();
 		BatchOperateVO batchvo = new BatchOperateVO();
 		BatchOperateVO batchrevo = new BatchOperateVO();
+		String pk_group = (String) param.get("pk_group");
+		String pk_org = (String) param.get("pk_org");
 		String pk_project = (String) param.get("pk_project");
+		String longitude = (String) param.get("longitude");
+		String latitude = (String) param.get("latitude");
+		String elevation = (String) param.get("elevation");
+		String pk_pipelinepointclass = (String) param.get("pk_pipelinepointclass");
+		String pk_pressuregrade = (String) param.get("pk_pressuregrade");
+		String isline = (String) param.get("isline");
+		String memo = (String) param.get("memo");
+		String creator = (String) param.get("creator");
+		String creationtime = (String) param.get("creationtime");
+		
 		pipelinepointDatasVO.setAttributeValue(PipelinepointdatasVO.PK_PROJECT, pk_project);
 		pipelinepointDatasVOs[0] = pipelinepointDatasVO;
 		batchvo.setAddObjs(pipelinepointDatasVOs);
@@ -46,8 +58,8 @@ public class PipelinepointDatasMobServiceImpl implements
 		pipelinepointDatasreVOs = (PipelinepointdatasVO[]) batchrevo.getAddObjs();
 		
 		// 构造结果返回MA
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(PipelinepointdatasVO.PK_PIPELINEPOINTDATAS, pipelinepointDatasreVOs[0].getPrimaryKey());
+		Map<String, Integer> result = new HashMap<String, Integer>();
+		result.put("success", 0);
 		resultProcessor.setResult(result);
 		return resultProcessor.getMobileResultVO();
 	}
