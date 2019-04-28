@@ -26,7 +26,7 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 				
 		for (int i = 0; i < vos.length; i++) {
 			PipelinepointdatasVO vo = vos[i];
-			vo.setAttributeValue("code", maxcode+1);
+			vo.setAttributeValue("code", ++maxcode);
 		}
 		
 	}
