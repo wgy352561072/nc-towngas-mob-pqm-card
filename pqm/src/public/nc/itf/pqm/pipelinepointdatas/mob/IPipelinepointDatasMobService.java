@@ -1,5 +1,6 @@
 package nc.itf.pqm.pipelinepointdatas.mob;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +20,7 @@ public interface IPipelinepointDatasMobService {
 	 * @param param  包含：
 	 * @return
 	 */
-	public Map<String, Object> insertPipelinepointDatas (Map<String, Object> param);
+	public Map<String, Object> insertPipelinepointDatas (String creator,String pk_group, List<Map> plpList);
 
 	/**
 	 * 根据当前项目查询管线点数据列表

@@ -1,8 +1,13 @@
 package nc.bs.pqm.pipelinepointdatas.rules;
 
+import java.util.ArrayList;
+
+import nc.bs.dao.BaseDAO;
+import nc.bs.dao.DAOException;
 import nc.bs.framework.common.NCLocator;
 import nc.impl.pubapp.pattern.rule.IRule;
 import nc.itf.uif.pub.IUifService;
+import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.uif.pub.exception.UifException;
 import nc.vo.pqm.pipelinepointdatas.PipelinepointdatasVO;
 import nc.vo.pubapp.pattern.exception.ExceptionUtils;
@@ -15,6 +20,16 @@ import nc.vo.pubapp.pattern.exception.ExceptionUtils;
  *
  */
 public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasVO> {
+	
+	private BaseDAO dao;
+
+	private BaseDAO getDAO() { // 建立数据库连接
+
+		if (dao == null) {
+			dao = new BaseDAO();
+		}
+		return dao;
+	}
 
 	@Override
 	public void process(PipelinepointdatasVO[] vos) {
@@ -31,12 +46,18 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 		
 	}
 
-	private int queryMaxCode() {
-		IUifService service = NCLocator.getInstance().lookup(IUifService.class);
+	@SuppressWarnings("unchecked")
+	private int queryMaxCode() {		
 		int maxcode = 0;
+		String querySql = "select * from(select * from pqm_pipelinepointdatas order by code desc) where rownum=1";
 		try {
-			maxcode = (int) service.findColValue("pqm_pipelinepointdatas", "max(code)", "nvl(dr,0) = 0");
-		} catch (UifException e) {
+			ArrayList<PipelinepointdatasVO> slist = (ArrayList<PipelinepointdatasVO>) getDAO()
+					.executeQuery(querySql,
+							new BeanListProcessor(PipelinepointdatasVO.class));
+			if(slist != null && slist.size() > 0){
+				maxcode = (int) slist.get(0).getAttributeValue("code");
+			}
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
 		return maxcode;

@@ -24,10 +24,10 @@ public class PipelinepointDatasSaveRecordRule implements IRule<Pipelinepointdata
 		UFDateTime nowTime = new UFDateTime();
 		for (int i = 0; i < vos.length; i++) {
 			PipelinepointdatasVO vo = vos[i];
-			Object pk_pressuregrade = vo.getAttributeValue("pk_pressuregrade");
-			if(pk_pressuregrade == null){//新增的单据
-				vo.setAttributeValue("creator", userid);
-				vo.setAttributeValue("creationtime", nowTime);
+			Object pk_pipelinepointdatas = vo.getAttributeValue("pk_pipelinepointdatas");
+			if(pk_pipelinepointdatas == null){//新增的单据
+//				vo.setAttributeValue("creator", userid);
+//				vo.setAttributeValue("creationtime", nowTime);
 			}else{//修改的单据
 				vo.setAttributeValue("modifier", userid);
 				vo.setAttributeValue("modifiedtime", nowTime);
