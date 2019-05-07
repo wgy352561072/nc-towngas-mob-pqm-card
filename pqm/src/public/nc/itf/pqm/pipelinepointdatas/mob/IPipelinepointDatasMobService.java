@@ -30,7 +30,7 @@ public interface IPipelinepointDatasMobService {
 	 * @param pk_project
 	 * @return 
 	 */
-	public Map<String, Object> queryPipelinepointDatasByProject (Map<String, Object> param);
+	public Map<String, Object> queryPipelinepointDatasByProject (String pk_project,String groupid);
 
 	/**
 	 * 根据管线点数据pk查询管线点数据详细信息

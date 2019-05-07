@@ -10,6 +10,7 @@ import nc.bs.framework.common.InvocationInfoProxy;
 import nc.impl.am.db.DBAccessUtil;
 import nc.itf.pqm.IPipelinepointdatasMaintain;
 import nc.itf.pqm.pipelinepointdatas.mob.IPipelinepointDatasMobService;
+import nc.jdbc.framework.processor.MapListProcessor;
 import nc.vo.bd.meta.BatchOperateVO;
 import nc.vo.pm.mobile.base.MobileResultProcessor;
 import nc.vo.pm.mobile.base.PMMobVOResultSetProcessor;
@@ -129,14 +130,12 @@ public class PipelinepointDatasMobServiceImpl implements
 	}*/
 
 	@Override
-	public Map<String, Object> queryPipelinepointDatasByProject(
-			Map<String, Object> param) {
+	public Map<String, Object> queryPipelinepointDatasByProject(String pk_project,String groupid) {
 		MobileResultProcessor resultProcessor = new MobileResultProcessor();
 		DBAccessUtil baseDAO = new DBAccessUtil();
-		String pk_project = PMMobilePubUtils.changeString(param.get(PipelinepointdatasMobVO.PK_PROJECT));
 		
 		StringBuffer querySql = new StringBuffer();
-		querySql.append("select d.longitude,d.latitude,d.elevation,c.name pipelinepointclass_name,g.name pressuregrade_name,d.isline,d.memo ");
+		querySql.append("select d.code,d.longitude,d.latitude,d.elevation,c.name as pipelinepointclass_name,g.name as pressuregrade_name,d.isline,d.memo,d.pk_pipelinepointdatas ");
 		querySql.append("from pqm_pipelinepointdatas d ");
 		querySql.append("left join pmbd_pipelinepointclass c ");
 		querySql.append("on d.pk_pipelinepointclass = c.pk_pipelinepointclass ");
@@ -148,11 +147,11 @@ public class PipelinepointDatasMobServiceImpl implements
 		querySql.append(" order by d.code ");
 		
 		List<PipelinepointdatasMobVO>pipelinepointDatasMobVOs = null;
+		ArrayList slist = new ArrayList();
 		try {
-			pipelinepointDatasMobVOs = baseDAO.executeQuery(
+			slist = (ArrayList)baseDAO.executeQuery(
 					querySql.toString(),
-					new PMMobVOResultSetProcessor<PipelinepointdatasMobVO>(
-							PipelinepointdatasMobVO.class));
+					new MapListProcessor());
 		} catch (DAOException e) {
 			resultProcessor.setErrorMSGAndResultCode(PMMobilePubUtils
 					.getErrorMessage(e));
@@ -160,15 +159,13 @@ public class PipelinepointDatasMobServiceImpl implements
 		}
 
 		List<Map> queryResult = new ArrayList<Map>();
-		if ((pipelinepointDatasMobVOs != null)
-				&& (pipelinepointDatasMobVOs.size() > 0)) {
-			for (PipelinepointdatasMobVO vo : pipelinepointDatasMobVOs) {
-				if(vo.getAttributeValue(PipelinepointdatasMobVO.ISLINE) != null && vo.getAttributeValue(PipelinepointdatasMobVO.ISLINE).equals("Y")){
-					vo.setAttributeValue(PipelinepointdatasMobVO.ISLINE, "true");
-				}else{
-					vo.setAttributeValue(PipelinepointdatasMobVO.ISLINE, "false");
-				}
-				queryResult.add(vo.getResultMap());
+		if (slist != null&& slist.size() > 0) {
+			for (int i = 0;i<slist.size();i++) {
+				HashMap<String, Object> map =new HashMap<>();
+				PipelinepointdatasMobVO plpmobvo = new PipelinepointdatasMobVO();
+				map = (HashMap<String, Object>) slist.get(i);
+				plpmobvo = convertMapToMobVO(map);								
+				queryResult.add(plpmobvo.getResultMap());
 			}
 		}
 
@@ -176,6 +173,33 @@ public class PipelinepointDatasMobServiceImpl implements
 		return resultProcessor.getMobileResultVO();
 	}
 	
+	private PipelinepointdatasMobVO convertMapToMobVO(
+			HashMap<String, Object> map) {
+		PipelinepointdatasMobVO plpmobvo = new PipelinepointdatasMobVO();
+		
+		int code = (map.get("code") == null) ? null : (int)map.get("code");
+		String longitude = (map.get("longitude") == null) ? null : (String)map.get("longitude");
+		String latitude = (map.get("latitude") == null) ? null : (String)map.get("latitude");
+		String elevation = (map.get("elevation") == null) ? null : (String)map.get("elevation");
+		String pipelinepointclass_name = (map.get("pipelinepointclass_name") == null) ? null : (String)map.get("pipelinepointclass_name");
+		String pressuregrade_name = (map.get("pressuregrade_name") == null) ? null : (String)map.get("pressuregrade_name");
+		String isline = (map.get("isline") == null) ? null : (map.get("isline").equals("Y")) ? "true" : "false";
+		String memo = (map.get("memo") == null) ? null : (String)map.get("memo");
+		String pk_pipelinepointdatas = (map.get("pk_pipelinepointdatas") == null) ? null : (String)map.get("pk_pipelinepointdatas");
+		
+		plpmobvo.setAttributeValue("code", code);
+		plpmobvo.setAttributeValue("longitude", longitude);
+		plpmobvo.setAttributeValue("latitude", latitude);
+		plpmobvo.setAttributeValue("elevation", elevation);
+		plpmobvo.setAttributeValue("pipelinepointclass_name", pipelinepointclass_name);
+		plpmobvo.setAttributeValue("pressuregrade_name", pressuregrade_name);
+		plpmobvo.setAttributeValue("isline", isline);
+		plpmobvo.setAttributeValue("memo", memo);
+		plpmobvo.setAttributeValue("pk_pipelinepointdatas", pk_pipelinepointdatas);
+		
+		return plpmobvo;
+	}
+
 	@Override
 	public Map<String, Object> queryPipelinepointDatasByPK(
 			Map<String, Object> param) {
