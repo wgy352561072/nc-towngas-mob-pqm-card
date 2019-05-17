@@ -146,7 +146,6 @@ public class PipelinepointDatasMobServiceImpl implements
 		querySql.append("' and d.dr = 0 ");
 		querySql.append(" order by d.code ");
 		
-		List<PipelinepointdatasMobVO>pipelinepointDatasMobVOs = null;
 		ArrayList slist = new ArrayList();
 		try {
 			slist = (ArrayList)baseDAO.executeQuery(

@@ -13,7 +13,8 @@ import nc.vo.pubapp.pattern.exception.ExceptionUtils;
  * @version 2019-04-10 16:11:26
  *
  */
-public class PipelinepointDatasCheckCodeRule implements IRule<PipelinepointdatasVO> {
+public class PipelinepointDatasCheckCodeRule implements
+		IRule<PipelinepointdatasVO> {
 
 	@Override
 	public void process(PipelinepointdatasVO[] vos) {
@@ -25,31 +26,44 @@ public class PipelinepointDatasCheckCodeRule implements IRule<Pipelinepointdatas
 			Object code = vo.getAttributeValue("code");
 			if (code == null) {
 				ExceptionUtils.wrappBusinessException("管线点数据编码不能为空！");
-			}			
-			Object pk_pipelinepointdatas = vo.getAttributeValue("pk_pipelinepointdatas");
+			}
+			Object pk_pipelinepointdatas = vo
+					.getAttributeValue("pk_pipelinepointdatas");
+			//vo.setAttributeValue("pk_project", "1002A910000000NOZORS");
+			Object pk_projectobj = vo.getAttributeValue("pk_project");
+			if (pk_projectobj == null) {
+				continue;
+			}
+			String pk_project = (String) pk_projectobj;
 			String existpk = null;
 			IUifService service = NCLocator.getInstance().lookup(
 					IUifService.class);
-			if(pk_pipelinepointdatas == null){//新增的单据
+			if (pk_pipelinepointdatas == null) {// 新增的单据
 				try {
 					existpk = (String) service.findColValue(
 							"pqm_pipelinepointdatas", "pk_pipelinepointdatas",
-							"code = " + code + " and nvl(dr,0) = 0");
+							"code = " + code + " and pk_project = '"
+									+ pk_project + "' and nvl(dr,0) = 0");
 				} catch (UifException e) {
 					e.printStackTrace();
 				}
-			}else{//修改的单据
+			} else {// 修改的单据
 				try {
 					existpk = (String) service.findColValue(
 							"pqm_pipelinepointdatas", "pk_pipelinepointdatas",
-							"code = " + code + " and pk_pipelinepointdatas <> '"+pk_pipelinepointdatas.toString()+"' and nvl(dr,0) = 0");
+							"code = " + code
+									+ " and pk_pipelinepointdatas <> '"
+									+ pk_pipelinepointdatas.toString()
+									+ "' and pk_project = '" + pk_project
+									+ "'  and nvl(dr,0) = 0");
 				} catch (UifException e) {
 					e.printStackTrace();
 				}
 			}
-			if(existpk != null){
-				ExceptionUtils.wrappBusinessException("管线点数据编码:"+code+"存在重复！");
+			if (existpk != null) {
+				ExceptionUtils.wrappBusinessException("管线点数据编码:" + code
+						+ "存在重复！");
 			}
-		}		
+		}
 	}
 }

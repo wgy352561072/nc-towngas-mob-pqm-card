@@ -13,10 +13,7 @@ public class PipelinepointdatasAddLineAction extends BatchAddLineAction {
 	protected void setDefaultData(Object obj) {
 		super.setDefaultData(obj);
 		PipelinepointdatasVO singleDocVO = (PipelinepointdatasVO) obj;
-		//singleDocVO.setPk_group(this.getModel().getContext().getPk_group());
-		//singleDocVO.setPk_org(this.getModel().getContext().getPk_org());
-		singleDocVO.setAttributeValue("pk_group", this.getModel().getContext().getPk_group());
-		singleDocVO.setAttributeValue("pk_org", this.getModel().getContext().getPk_org());
+		singleDocVO.setPk_group(this.getModel().getContext().getPk_group());
+		singleDocVO.setPk_org(this.getModel().getContext().getPk_org());
 	}
-
 }

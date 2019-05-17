@@ -1,6 +1,8 @@
 package nc.bs.pqm.pipelinepointdatas.rules;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import nc.bs.dao.BaseDAO;
 import nc.bs.dao.DAOException;
@@ -36,20 +38,38 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 		if (vos == null || vos.length == 0) {
 			ExceptionUtils.wrappBusinessException("数据不能为空！");
 		}
-		
-		int maxcode = queryMaxCode();;
+				
+		Map<String, Integer> projMaxCodeMap = new HashMap<String, Integer>();
 				
 		for (int i = 0; i < vos.length; i++) {
 			PipelinepointdatasVO vo = vos[i];
-			vo.setAttributeValue("code", ++maxcode);
-		}
-		
+			Object code = vo.getAttributeValue("code");
+			if( code!= null){
+				continue;
+			}
+			//vo.setAttributeValue("pk_project", "1002A910000000NOZORS");
+			Object pk_projectobj = vo.getAttributeValue("pk_project");
+			if(pk_projectobj == null){
+				vo.setAttributeValue("code", 999999999);
+				continue;
+			}
+			String pk_project = (String) pk_projectobj;
+			if(projMaxCodeMap.containsKey(pk_project)){
+				int maxcode = projMaxCodeMap.get(pk_project);
+				vo.setAttributeValue("code", ++maxcode);
+				projMaxCodeMap.put(pk_project, maxcode);
+			}else{
+				int maxcode = queryMaxCode(pk_project);
+				vo.setAttributeValue("code", ++maxcode);
+				projMaxCodeMap.put(pk_project, maxcode);
+			}									
+		}		
 	}
 
 	@SuppressWarnings("unchecked")
-	private int queryMaxCode() {		
+	private int queryMaxCode(String pk_project) {		
 		int maxcode = 0;
-		String querySql = "select * from(select * from pqm_pipelinepointdatas order by code desc) where rownum=1";
+		String querySql = "select * from(select * from pqm_pipelinepointdatas where pk_project = '"+pk_project+"' order by code desc) where rownum=1";
 		try {
 			ArrayList<PipelinepointdatasVO> slist = (ArrayList<PipelinepointdatasVO>) getDAO()
 					.executeQuery(querySql,

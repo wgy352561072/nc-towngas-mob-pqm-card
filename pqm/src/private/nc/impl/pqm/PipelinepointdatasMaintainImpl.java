@@ -29,20 +29,44 @@ public class PipelinepointdatasMaintainImpl extends AcePipelinepointdatasPubServ
 
 	@Override
 	public BatchOperateVO batchSave(BatchOperateVO batchVO) throws BusinessException {
-		PipelinepointdatasVO[] pressureVO = checkCodeRepeat(batchVO); 		
+		checkCodeRepeat(batchVO); 		
 		// 添加BP规则
-		AroundProcesser<PipelinepointdatasVO> processer = new AroundProcesser<PipelinepointdatasVO>(
+		AroundProcesser<PipelinepointdatasVO> processer4add = new AroundProcesser<PipelinepointdatasVO>(
+				null);
+		AroundProcesser<PipelinepointdatasVO> processer4update = new AroundProcesser<PipelinepointdatasVO>(
 				null);
 		IRule<PipelinepointdatasVO> rule = null;
+		
 		rule = new PipelinepointDatasAutoCodeRule();
-		processer.addBeforeRule(rule);
-//		rule = new PipelinepointDatasCheckCodeRule();
-//		processer.addBeforeRule(rule);
+		processer4add.addBeforeRule(rule);
+		
 		rule = new PipelinepointDatasSaveRecordRule();
-		processer.addBeforeRule(rule);
-
-
-		processer.before(pressureVO);
+		processer4add.addBeforeRule(rule);
+		processer4update.addBeforeRule(rule);
+		
+		rule = new PipelinepointDatasCheckCodeRule();
+		processer4add.addBeforeRule(rule);
+		processer4update.addBeforeRule(rule);
+		
+		Object[] addVOs =  batchVO.getAddObjs();
+		Object[] updateVOs = batchVO.getUpdObjs();
+		
+		if(addVOs != null && addVOs.length > 0){
+			PipelinepointdatasVO[] addplpdatavos = new PipelinepointdatasVO[addVOs.length];
+			for(int i = 0; i < addVOs.length; i++){
+				addplpdatavos[i] = (PipelinepointdatasVO) addVOs[i];
+			}
+			processer4add.before(addplpdatavos);
+		}
+		
+		if(updateVOs != null && updateVOs.length > 0){
+			PipelinepointdatasVO[] updateplpdatavos = new PipelinepointdatasVO[updateVOs.length];
+			for(int i = 0; i < updateVOs.length; i++){
+				updateplpdatavos[i] = (PipelinepointdatasVO) updateVOs[i];
+			}
+			processer4update.before(updateplpdatavos);
+		}
+			
 		BatchSaveAction<PipelinepointdatasVO> saveAction = new BatchSaveAction<PipelinepointdatasVO>();
 		BatchOperateVO retData = saveAction.batchSave(batchVO);
 		return retData;
@@ -54,7 +78,7 @@ public class PipelinepointdatasMaintainImpl extends AcePipelinepointdatasPubServ
 	 * @return
 	 */
 	private PipelinepointdatasVO[] checkCodeRepeat(BatchOperateVO batchVO) {
-		Set<String> codeSet = new HashSet<String>();
+		Set<Integer> codeSet = new HashSet<Integer>();
 		Object[] addVOs =  batchVO.getAddObjs();
 		Object[] updateVOs = batchVO.getUpdObjs();
 		ArrayList<PipelinepointdatasVO> prevolist = new ArrayList<PipelinepointdatasVO>();
@@ -67,36 +91,36 @@ public class PipelinepointdatasMaintainImpl extends AcePipelinepointdatasPubServ
 		return prevo;
 	}
 
-	private void doCheckInsert(Object[] addVOs, Set<String> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
+	private void doCheckInsert(Object[] addVOs, Set<Integer> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
 		if(addVOs != null && addVOs.length > 0){
 			for(int i = 0;i < addVOs.length;i ++){
 				PipelinepointdatasVO vo = (PipelinepointdatasVO) addVOs[i];
-/*				Object codeobj = vo.getAttributeValue("code");
+				Object codeobj = vo.getAttributeValue("code");
 				if(codeobj != null){
-					String code = (String) codeobj;
+					int code = (int) codeobj;
 					if(codeSet.contains(code)){
 						ExceptionUtils.wrappBusinessException("管线点数据等级编码:"+code+"存在重复！");
 					}
 					codeSet.add(code);
-				}*/
+				}
 				prevolist.add(vo);
 			}			
 		}		
 	}
 	
-	private void doCheckUpdate(Object[] addVOs, Set<String> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
+	private void doCheckUpdate(Object[] addVOs, Set<Integer> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
 		if(addVOs != null && addVOs.length > 0){
 			for(int i = 0;i < addVOs.length;i ++){
 				PipelinepointdatasVO vo = (PipelinepointdatasVO) addVOs[i];
-/*				Object codeobj = vo.getAttributeValue("code");
+				Object codeobj = vo.getAttributeValue("code");
 				if(codeobj == null && vo.getAttributeValue("pk_pipelinepointdatas") != null){
 					ExceptionUtils.wrappBusinessException("管线点数据编码不能为空！");
 				}
-				String code = (String) codeobj;
+				int code = (int) codeobj;
 				if(codeSet.contains(code)){
 					ExceptionUtils.wrappBusinessException("管线点数据等级编码:"+code+"存在重复！");
 				}
-				codeSet.add(code);*/
+				codeSet.add(code);
 				prevolist.add(vo);
 			}			
 		}		
