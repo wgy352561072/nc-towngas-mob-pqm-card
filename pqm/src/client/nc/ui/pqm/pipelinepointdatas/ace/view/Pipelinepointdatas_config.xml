@@ -218,7 +218,11 @@
     </bean>
     <bean id="queryTemplateContainer" class="nc.ui.uif2.editor.QueryTemplateContainer">
             <property name="context" ref="context"></property>
-        </bean>
+    </bean>
+    
+    <bean id="qryCondInitializer" class="nc.ui.uif2.editor.QueryTemplateContainer">
+            <property name="context" ref="context"></property>
+    </bean>
 
     
     <!-- 列表打印组 -->
