@@ -11,13 +11,12 @@ import nc.impl.am.db.DBAccessUtil;
 import nc.itf.pqm.IPipelinepointdatasMaintain;
 import nc.itf.pqm.pipelinepointdatas.mob.IPipelinepointDatasMobService;
 import nc.jdbc.framework.processor.MapListProcessor;
-import nc.vo.bd.meta.BatchOperateVO;
 import nc.vo.pm.mobile.base.MobileResultProcessor;
 import nc.vo.pm.mobile.base.PMMobVOResultSetProcessor;
 import nc.vo.pmbd.mob.util.PMMobilePubUtils;
 import nc.vo.pmpub.common.utils.PMProxy;
+import nc.vo.pqm.pipelinepointdatas.AggPipelinepointdatasVO;
 import nc.vo.pqm.pipelinepointdatas.PipelinepointdatasVO;
-import nc.vo.pqm.pipelinepointdatas.mob.PipelinepointdatasListMobVO;
 import nc.vo.pqm.pipelinepointdatas.mob.PipelinepointdatasMobVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.lang.UFDateTime;
@@ -28,22 +27,20 @@ public class PipelinepointDatasMobServiceImpl implements
 	@Override
 	public Map<String, Object> insertPipelinepointDatas(String creator,String pk_group, List<Map> plpList) {
 		MobileResultProcessor resultProcessor = new MobileResultProcessor();
-		PipelinepointdatasVO[] pipelinepointDatasVOs = new PipelinepointdatasVO[plpList.size()];
-		int[] plpindex = new int[plpList.size()];
-		BatchOperateVO batchvo = new BatchOperateVO();
-		BatchOperateVO batchrevo = new BatchOperateVO();
+		AggPipelinepointdatasVO[] aggPipelinepointDatasVOs = new AggPipelinepointdatasVO[plpList.size()];
+
 		for(int i = 0;i<plpList.size();i++){
-			Map plpmap = plpList.get(i);			
+			Map plpmap = plpList.get(i);
+			AggPipelinepointdatasVO aggPlpdvo = new AggPipelinepointdatasVO();
 			PipelinepointdatasVO plpdvo = convertPipelinepointdatasVO(creator,pk_group,plpmap);
-			pipelinepointDatasVOs[i] = plpdvo;	
-			plpindex[i] = i;
+			aggPlpdvo.setParentVO(plpdvo);
+			aggPipelinepointDatasVOs[i] = aggPlpdvo;	
 		}
-		batchvo.setAddIndexs(plpindex);
-		batchvo.setAddObjs(pipelinepointDatasVOs);
+
 		InvocationInfoProxy.getInstance().setGroupId(pk_group);
 		
 		try {
-			batchrevo = PMProxy.lookup(IPipelinepointdatasMaintain.class).batchSave(batchvo);
+			PMProxy.lookup(IPipelinepointdatasMaintain.class).insertBill(aggPipelinepointDatasVOs);
 		} catch (BusinessException e) {
 			resultProcessor.setErrorMSGAndResultCode(PMMobilePubUtils
 					.getErrorMessage(e));

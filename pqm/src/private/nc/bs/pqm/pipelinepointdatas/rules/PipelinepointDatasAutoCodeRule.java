@@ -11,6 +11,7 @@ import nc.impl.pubapp.pattern.rule.IRule;
 import nc.itf.uif.pub.IUifService;
 import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.uif.pub.exception.UifException;
+import nc.vo.pqm.pipelinepointdatas.AggPipelinepointdatasVO;
 import nc.vo.pqm.pipelinepointdatas.PipelinepointdatasVO;
 import nc.vo.pubapp.pattern.exception.ExceptionUtils;
 
@@ -21,7 +22,7 @@ import nc.vo.pubapp.pattern.exception.ExceptionUtils;
  * @since 2019-04-26 18:06:00
  *
  */
-public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasVO> {
+public class PipelinepointDatasAutoCodeRule implements IRule<AggPipelinepointdatasVO> {
 	
 	private BaseDAO dao;
 
@@ -34,7 +35,7 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 	}
 
 	@Override
-	public void process(PipelinepointdatasVO[] vos) {
+	public void process(AggPipelinepointdatasVO[] vos) {
 		if (vos == null || vos.length == 0) {
 			ExceptionUtils.wrappBusinessException("数据不能为空！");
 		}
@@ -42,25 +43,25 @@ public class PipelinepointDatasAutoCodeRule implements IRule<PipelinepointdatasV
 		Map<String, Integer> projMaxCodeMap = new HashMap<String, Integer>();
 				
 		for (int i = 0; i < vos.length; i++) {
-			PipelinepointdatasVO vo = vos[i];
-			Object code = vo.getAttributeValue("code");
+			AggPipelinepointdatasVO vo = vos[i];
+			PipelinepointdatasVO hvo = vo.getParentVO();
+			Object code = hvo.getAttributeValue("code");
 			if( code!= null){
 				continue;
 			}
-			//vo.setAttributeValue("pk_project", "1002A910000000NOZORS");
-			Object pk_projectobj = vo.getAttributeValue("pk_project");
+			Object pk_projectobj = hvo.getAttributeValue("pk_project");
 			if(pk_projectobj == null){
-				vo.setAttributeValue("code", 999999999);
+				hvo.setAttributeValue("code", 999999999);
 				continue;
 			}
 			String pk_project = (String) pk_projectobj;
 			if(projMaxCodeMap.containsKey(pk_project)){
 				int maxcode = projMaxCodeMap.get(pk_project);
-				vo.setAttributeValue("code", ++maxcode);
+				hvo.setAttributeValue("code", ++maxcode);
 				projMaxCodeMap.put(pk_project, maxcode);
 			}else{
 				int maxcode = queryMaxCode(pk_project);
-				vo.setAttributeValue("code", ++maxcode);
+				hvo.setAttributeValue("code", ++maxcode);
 				projMaxCodeMap.put(pk_project, maxcode);
 			}									
 		}		

@@ -1,128 +1,106 @@
 package nc.impl.pqm;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import nc.bs.pqm.pipelinepointdatas.rules.PipelinepointDatasAutoCodeRule;
-import nc.bs.pqm.pipelinepointdatas.rules.PipelinepointDatasCheckCodeRule;
-import nc.bs.pqm.pipelinepointdatas.rules.PipelinepointDatasSaveRecordRule;
-import nc.impl.pub.ace.AcePipelinepointdatasPubServiceImpl;
-import nc.impl.pubapp.pattern.rule.IRule;
-import nc.impl.pubapp.pattern.rule.processer.AroundProcesser;
-import nc.impl.pubapp.pub.smart.BatchSaveAction;
-import nc.vo.bd.meta.BatchOperateVO;
+import nc.bs.pqm.pipelinepointdatas.ace.bp.AcePipelinepointdatasDeleteBP;
+import nc.bs.pqm.pipelinepointdatas.ace.bp.AcePipelinepointdatasInsertBP;
+import nc.bs.pqm.pipelinepointdatas.ace.bp.AcePipelinepointdatasUpdateBP;
+import nc.impl.pubapp.pattern.data.bill.BillLazyQuery;
+import nc.impl.pubapp.pattern.data.bill.tool.BillTransferTool;
+import nc.itf.pqm.IPipelinepointdatasMaintain;
 import nc.ui.querytemplate.querytree.IQueryScheme;
+import nc.vo.pqm.pipelinepointdatas.AggPipelinepointdatasVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pubapp.pattern.exception.ExceptionUtils;
-import nc.vo.pqm.pipelinepointdatas.PipelinepointdatasVO;
-import nc.itf.pqm.IPipelinepointdatasMaintain;
 
-
-public class PipelinepointdatasMaintainImpl extends AcePipelinepointdatasPubServiceImpl
+public class PipelinepointdatasMaintainImpl 
 		implements IPipelinepointdatasMaintain {
+	
+	private AcePipelinepointdatasInsertBP insertBP;
+	private AcePipelinepointdatasUpdateBP updateBP;
+	private AcePipelinepointdatasDeleteBP deleteBP;
+
+
 
 	@Override
-	public PipelinepointdatasVO[] query(IQueryScheme queryScheme) throws BusinessException {
-		return super.pubquerybasedoc(queryScheme);
-	}
-
-	@Override
-	public BatchOperateVO batchSave(BatchOperateVO batchVO) throws BusinessException {
-		checkCodeRepeat(batchVO); 		
-		// 添加BP规则
-		AroundProcesser<PipelinepointdatasVO> processer4add = new AroundProcesser<PipelinepointdatasVO>(
-				null);
-		AroundProcesser<PipelinepointdatasVO> processer4update = new AroundProcesser<PipelinepointdatasVO>(
-				null);
-		IRule<PipelinepointdatasVO> rule = null;
-		
-		rule = new PipelinepointDatasAutoCodeRule();
-		processer4add.addBeforeRule(rule);
-		
-		rule = new PipelinepointDatasSaveRecordRule();
-		processer4add.addBeforeRule(rule);
-		processer4update.addBeforeRule(rule);
-		
-		rule = new PipelinepointDatasCheckCodeRule();
-		processer4add.addBeforeRule(rule);
-		processer4update.addBeforeRule(rule);
-		
-		Object[] addVOs =  batchVO.getAddObjs();
-		Object[] updateVOs = batchVO.getUpdObjs();
-		
-		if(addVOs != null && addVOs.length > 0){
-			PipelinepointdatasVO[] addplpdatavos = new PipelinepointdatasVO[addVOs.length];
-			for(int i = 0; i < addVOs.length; i++){
-				addplpdatavos[i] = (PipelinepointdatasVO) addVOs[i];
-			}
-			processer4add.before(addplpdatavos);
+	public AggPipelinepointdatasVO[] query(IQueryScheme queryScheme)
+			throws BusinessException {
+		AggPipelinepointdatasVO[] bills = null;
+		try {
+			this.preQuery(queryScheme);
+			BillLazyQuery<AggPipelinepointdatasVO> query = new BillLazyQuery<AggPipelinepointdatasVO>(
+					AggPipelinepointdatasVO.class);
+			bills = query.query(queryScheme, null);
+		} catch (Exception e) {
+			ExceptionUtils.marsh(e);
 		}
-		
-		if(updateVOs != null && updateVOs.length > 0){
-			PipelinepointdatasVO[] updateplpdatavos = new PipelinepointdatasVO[updateVOs.length];
-			for(int i = 0; i < updateVOs.length; i++){
-				updateplpdatavos[i] = (PipelinepointdatasVO) updateVOs[i];
-			}
-			processer4update.before(updateplpdatavos);
-		}
-			
-		BatchSaveAction<PipelinepointdatasVO> saveAction = new BatchSaveAction<PipelinepointdatasVO>();
-		BatchOperateVO retData = saveAction.batchSave(batchVO);
-		return retData;
+		return bills;
 	}
 	
 	/**
-	 * 检查编码重复
-	 * @param batchVO
-	 * @return
+	 * 由子类实现，查询之前对queryScheme进行加工，加入自己的逻辑
+	 * 
+	 * @param queryScheme
 	 */
-	private PipelinepointdatasVO[] checkCodeRepeat(BatchOperateVO batchVO) {
-		Set<Integer> codeSet = new HashSet<Integer>();
-		Object[] addVOs =  batchVO.getAddObjs();
-		Object[] updateVOs = batchVO.getUpdObjs();
-		ArrayList<PipelinepointdatasVO> prevolist = new ArrayList<PipelinepointdatasVO>();
-		doCheckInsert(addVOs,codeSet,prevolist);
-		doCheckUpdate(updateVOs,codeSet,prevolist);
-		PipelinepointdatasVO[] prevo = new PipelinepointdatasVO[prevolist.size()];
-		for(int i = 0; i < prevolist.size();i++){
-			prevo[i] = prevolist.get(i);
-		}
-		return prevo;
+	protected void preQuery(IQueryScheme queryScheme) {
+		// 查询之前对queryScheme进行加工，加入自己的逻辑
 	}
 
-	private void doCheckInsert(Object[] addVOs, Set<Integer> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
-		if(addVOs != null && addVOs.length > 0){
-			for(int i = 0;i < addVOs.length;i ++){
-				PipelinepointdatasVO vo = (PipelinepointdatasVO) addVOs[i];
-				Object codeobj = vo.getAttributeValue("code");
-				if(codeobj != null){
-					int code = (int) codeobj;
-					if(codeSet.contains(code)){
-						ExceptionUtils.wrappBusinessException("管线点数据等级编码:"+code+"存在重复！");
-					}
-					codeSet.add(code);
-				}
-				prevolist.add(vo);
-			}			
-		}		
+	@Override
+	public AggPipelinepointdatasVO[] insertBill(
+			AggPipelinepointdatasVO[] billVOs) throws BusinessException {
+		return getInsertBP().insert(billVOs);
+	}
+
+	@Override
+	public AggPipelinepointdatasVO[] updateBill(
+			AggPipelinepointdatasVO[] billVOs) throws BusinessException {
+		try {
+			// 加锁 + 检查ts
+			BillTransferTool<AggPipelinepointdatasVO> transTool = new BillTransferTool<AggPipelinepointdatasVO>(billVOs);
+			// 补全前台VO
+			AggPipelinepointdatasVO[] fullBills = transTool.getClientFullInfoBill();
+			// 获得修改前vo
+			AggPipelinepointdatasVO[] originBills = transTool.getOriginBills();
+			// 调用BP
+			AggPipelinepointdatasVO[] retBills = getUpdateBP()
+					.update(fullBills, originBills);
+			// 构造返回数据
+			retBills = transTool.getBillForToClient(retBills);
+			return retBills;
+		} catch (Exception e) {
+			ExceptionUtils.marsh(e);
+		}
+		return null;
+	}
+
+	@Override
+	public void deleteBill(AggPipelinepointdatasVO[] billVOs)
+			throws BusinessException {
+		// 加锁 比较ts
+		BillTransferTool<AggPipelinepointdatasVO> transferTool = new BillTransferTool<AggPipelinepointdatasVO>(billVOs);
+		// 补全前台VO
+		AggPipelinepointdatasVO[] fullBills = transferTool.getClientFullInfoBill();
+		// 调用BP
+		getDeleteBP().delete(fullBills);
+	}
+
+	public AcePipelinepointdatasInsertBP getInsertBP() {
+		if(insertBP == null){
+			insertBP = new AcePipelinepointdatasInsertBP();
+		}
+		return insertBP;
 	}
 	
-	private void doCheckUpdate(Object[] addVOs, Set<Integer> codeSet, ArrayList<PipelinepointdatasVO> prevolist) {
-		if(addVOs != null && addVOs.length > 0){
-			for(int i = 0;i < addVOs.length;i ++){
-				PipelinepointdatasVO vo = (PipelinepointdatasVO) addVOs[i];
-				Object codeobj = vo.getAttributeValue("code");
-				if(codeobj == null && vo.getAttributeValue("pk_pipelinepointdatas") != null){
-					ExceptionUtils.wrappBusinessException("管线点数据编码不能为空！");
-				}
-				int code = (int) codeobj;
-				if(codeSet.contains(code)){
-					ExceptionUtils.wrappBusinessException("管线点数据等级编码:"+code+"存在重复！");
-				}
-				codeSet.add(code);
-				prevolist.add(vo);
-			}			
-		}		
+	public AcePipelinepointdatasUpdateBP getUpdateBP() {
+		if(updateBP == null){
+			updateBP = new AcePipelinepointdatasUpdateBP();
+		}
+		return updateBP;
+	}
+	
+	public AcePipelinepointdatasDeleteBP getDeleteBP() {
+		if(deleteBP == null){
+			deleteBP = new AcePipelinepointdatasDeleteBP();
+		}
+		return deleteBP;
 	}
 }

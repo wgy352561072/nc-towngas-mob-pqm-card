@@ -5,6 +5,7 @@
 	  <interface>nc.itf.pqm.IPipelinepointdatasMaintain</interface>
 	  <implementation>nc.impl.pqm.PipelinepointdatasMaintainImpl</implementation>
 	</component>
+	
 	<component remote="true" singleton="true"  tx="CMT">
 	  <interface>nc.itf.pqm.pipelinepointdatas.mob.IPipelinepointDatasMobService</interface>
 	  <implementation>nc.impl.pqm.pipelinepointdatas.mob.PipelinepointDatasMobServiceImpl</implementation>
